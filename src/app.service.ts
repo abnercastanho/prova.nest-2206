@@ -11,14 +11,14 @@ export class AppService {
 
   constructor(private readonly jwtService: JwtService) {}
 
-  // 1. Criação de Usuário
+  //  Criação de Usuário
   async createUser(data: CreateUserDto) {
     const userExists = this.usersTable.find((u) => u.email === data.email);
     if (userExists) {
       return { error: 'E-mail já cadastrado no sistema.' };
     }
 
-    // Criptografando a senha antes de salvar
+    
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const newUser = {
       id: this.usersTable.length + 1,
@@ -29,32 +29,32 @@ export class AppService {
 
     this.usersTable.push(newUser);
 
-    // Retorna o usuário sem a senha por segurança
+   
     const { password, ...result } = newUser;
     return result;
   }
 
-  // 2. Método de Autenticação (Requisito 1)
+  
   async login(data: LoginDto) {
     const user = this.usersTable.find((u) => u.email === data.email);
     if (!user) {
       return { error: 'Credenciais inválidas.' };
     }
 
-    // Compara a senha digitada com o hash salvo
+    
     const isPasswordValid = await bcrypt.compare(data.password, user.password);
     if (!isPasswordValid) {
       return { error: 'Credenciais inválidas.' };
     }
 
-    // Gera o token JWT com os dados do usuário
+    
     const payload = { email: user.email, sub: user.id, name: user.name };
     return {
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  // 3. Consulta de Usuários
+  //  Consulta de Usuários
   findAllUsers() {
     // Retorna a listagem omitindo as senhas criptografadas
     return this.usersTable.map(({ password, ...user }) => user);
