@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { AppModule } from '../app.module'; // Vamos centralizar no AppModule para simplificar a prova
+import { AppModule } from './app.module'; // Vamos centralizar no AppModule para simplificar a prova
 
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(

@@ -7,7 +7,7 @@ import { LoginDto } from './dtos/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { firstValueFrom } from 'rxjs';
 
-@ApiTags('Autenticação & Usuários') // Grupo no Swagger
+@ApiTags('Autenticação & Usuários') 
 @Controller('auth')
 export class AppController {
   constructor(
