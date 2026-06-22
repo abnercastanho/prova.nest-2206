@@ -12,7 +12,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
       signOptions: { expiresIn: '1h' },    // Tempo de expiração do token
     }),
 
-    // Requisito 4: Registro do cliente do Microsserviço via TCP
+    //  Registro do cliente do Microsserviço via TCP
     ClientsModule.register([
       {
         name: 'AUTH_MICROSERVICE',
