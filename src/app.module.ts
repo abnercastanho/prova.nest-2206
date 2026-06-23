@@ -8,8 +8,8 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
   imports: [
     // Configuração do JWT (Método de Autenticação)
     JwtModule.register({
-      secret: 'PROVA_NEST_SECRET_KEY_2026', // Chave secreta para assinar o token
-      signOptions: { expiresIn: '1h' },    // Tempo de expiração do token
+      secret: 'PROVA_NEST_SECRET_KEY_2026', 
+      signOptions: { expiresIn: '1h' },    
     }),
 
     //  Registro do cliente do Microsserviço via TCP

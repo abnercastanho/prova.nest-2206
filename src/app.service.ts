@@ -54,7 +54,6 @@ export class AppService {
     };
   }
 
-  //  Consulta de Usuários
   findAllUsers() {
     // Retorna a listagem omitindo as senhas criptografadas
     return this.usersTable.map(({ password, ...user }) => user);

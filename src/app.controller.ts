@@ -32,7 +32,7 @@ export class AppController {
   @ApiOperation({ summary: 'Realizar autenticação (Login)' })
   @ApiResponse({ status: 200, description: 'Login efetuado com sucesso, retorna o JWT.' })
   async login(@Body() loginDto: LoginDto) {
-    // Requisito 1: Contém o método de autenticação
+    
     const result = await firstValueFrom(this.client.send({ cmd: 'login_user' }, loginDto));
     if (result.error) {
       throw new HttpException(result.error, HttpStatus.UNAUTHORIZED);
@@ -42,7 +42,7 @@ export class AppController {
 
   @Get('users')
   @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth() // Exige o botão de cadeado do JWT no Swagger
+  @ApiBearerAuth() 
   @ApiOperation({ summary: 'Consultar todos os usuários existentes (Requer Token JWT)' })
   async findAll() {
     const result = await firstValueFrom(this.client.send({ cmd: 'find_all_users' }, {}));
