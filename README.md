@@ -1,98 +1,306 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🚀 Prova NestJS — Sistema de Autenticação com Microsserviços
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Solução robusta e escalável desenvolvida em **NestJS** para **gerenciamento, criação, consulta e autenticação de usuários**, utilizando uma arquitetura distribuída de **Microsserviços**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A comunicação entre a API pública (Gateway) e o serviço interno de negócios (Microsserviço) é realizada de forma síncrona/assíncrona via protocolo nativo **TCP**, garantindo o desacoplamento total entre as camadas.
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Project setup
+---
 
-```bash
-$ npm install
+## 🛠️ Stack Tecnológica
+
+| Tecnologia | Versão | Finalidade |
+|---|---|---|
+| **NestJS** | ^11.0 | Framework principal |
+| **TypeScript** | ^5.7 | Linguagem base |
+| **@nestjs/microservices** | ^11.1 | Transporte TCP entre serviços |
+| **@nestjs/jwt** | ^11.0 | Geração e validação de tokens JWT |
+| **@nestjs/passport** | ^11.0 | Estratégia de autenticação |
+| **bcrypt** | ^6.0 | Hash seguro de senhas |
+| **@nestjs/swagger** | ^11.4 | Documentação interativa da API |
+| **class-validator** | ^0.15 | Validação de DTOs |
+
+---
+
+## 🏗️ Arquitetura do Sistema
+
+O ecossistema é dividido em **dois processos independentes** que rodam em paralelo e se comunicam via TCP:
+
+```
+Cliente / Frontend
+       │
+       │  HTTP (porta 3000)
+       ▼
+┌─────────────────────┐
+│    API GATEWAY      │  → Recebe requisições HTTP
+│   (main.ts)         │  → Valida DTOs
+│                     │  → Configura CORS global
+│                     │  → Expõe documentação Swagger
+└──────────┬──────────┘
+           │
+           │  TCP (porta 3001)
+           ▼
+┌─────────────────────┐
+│  USER MICROSERVICE  │  → Processa regras de negócio
+│ (main-microservice) │  → Cria e autentica usuários
+│                     │  → Gerencia persistência (in-memory)
+│                     │  → Gera tokens JWT
+└─────────────────────┘
 ```
 
-## Compile and run the project
+### 1. API Gateway — Porta `3000`
+
+- Ponto de entrada externo para todas as requisições HTTP
+- Configura liberação global de **CORS** (aceita qualquer origem)
+- Ativa **ValidationPipe** globalmente para validar todos os DTOs
+- Disponibiliza a documentação interativa via **Swagger**
+- Não processa dados diretamente — despacha comandos via TCP ao microsserviço e aguarda a resposta com `firstValueFrom()`
+
+### 2. User Microservice — Porta `3001`
+
+- Isolado do mundo externo, escuta apenas conexões TCP internas
+- Implementa a lógica de criação de usuários com `bcrypt` para hash de senhas
+- Executa a autenticação validando credenciais e retornando um token **JWT**
+- Mantém os usuários em memória (array em tempo de execução)
+- Responde aos padrões de mensagem: `create_user`, `login_user`, `find_all_users`
+
+---
+
+## ✅ Requisitos Atendidos
+
+| # | Requisito | Status |
+|---|---|---|
+| 1 | Métodos de Login, Criação e Consulta de usuários | ✅ |
+| 2 | Autenticação com JWT + validação via Guard customizado | ✅ |
+| 3 | CORS liberado globalmente no Gateway | ✅ |
+| 4 | Documentação completa de endpoints com `@nestjs/swagger` | ✅ |
+| 5 | Arquitetura em Microsserviços via `Transport.TCP` | ✅ |
+
+---
+
+## 🔧 Instalação
+
+**Pré-requisito:** Node.js **v18 ou superior** instalado.
+
+Na raiz do projeto (`prov.nest`), instale todas as dependências com um único comando:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+---
+
+## ▶️ Como Executar a Aplicação
+
+Por se tratar de uma arquitetura de microsserviços, é **obrigatório manter dois terminais abertos simultaneamente** para que os componentes se comuniquem.
+
+### Terminal 1 — API Gateway (HTTP)
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
+Sobe o servidor HTTP com hot-reload. Ao iniciar, você verá no console:
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+```
+API Gateway rodando em: http://localhost:3000
+Documentação Swagger em: http://localhost:3000/api/docs
+```
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Terminal 2 — Microsserviço de Usuários (TCP)
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run start:ms
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Inicializa o listener TCP. Ao iniciar, você verá no console:
 
-## Resources
+```
+🤖 Microsserviço de Autenticação/Usuários rodando via TCP na porta 3001
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+> ⚠️ **Atenção:** O Gateway não consegue processar nenhuma requisição sem que o microsserviço esteja ativo. Sempre suba os dois processos antes de realizar testes.
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+## 🧪 Endpoints Disponíveis
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Acesse `http://localhost:3000/api/docs` com os dois serviços ativos para testar visualmente pela interface do Swagger.
 
-## Stay in touch
+### 📌 Base URL: `http://localhost:3000`
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+### 👤 Criar Usuário
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+- **Método:** `POST`
+- **Rota:** `/auth/register`
+- **Autenticação:** Não requerida
+
+**Payload (JSON):**
+
+```json
+{
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+**Resposta de sucesso (`201 Created`):**
+
+```json
+{
+  "id": 1,
+  "name": "João Silva",
+  "email": "joao@email.com"
+}
+```
+
+**Resposta de erro — e-mail já cadastrado (`400 Bad Request`):**
+
+```json
+{
+  "message": "E-mail já cadastrado no sistema.",
+  "statusCode": 400
+}
+```
+
+---
+
+### 🔑 Autenticar Usuário (Login)
+
+- **Método:** `POST`
+- **Rota:** `/auth/login`
+- **Autenticação:** Não requerida
+
+**Payload (JSON):**
+
+```json
+{
+  "email": "joao@email.com",
+  "password": "senha123"
+}
+```
+
+**Resposta de sucesso (`200 OK`):**
+
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+**Resposta de erro — credenciais inválidas (`401 Unauthorized`):**
+
+```json
+{
+  "message": "Credenciais inválidas.",
+  "statusCode": 401
+}
+```
+
+---
+
+### 📋 Consultar Todos os Usuários
+
+- **Método:** `GET`
+- **Rota:** `/auth/users`
+- **Autenticação:** 🔒 **Requerida — Bearer JWT Token**
+
+**Header obrigatório:**
+
+```
+Authorization: Bearer <seu_access_token>
+```
+
+**Resposta de sucesso (`200 OK`):**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "João Silva",
+    "email": "joao@email.com"
+  }
+]
+```
+
+> As senhas nunca são retornadas — o campo `password` é omitido em todas as respostas.
+
+---
+
+## 🔐 Como Usar a Autenticação JWT no Swagger
+
+1. Acesse `http://localhost:3000/api/docs`
+2. Utilize o endpoint `POST /auth/register` para criar um usuário
+3. Utilize o endpoint `POST /auth/login` com as credenciais criadas
+4. Copie o valor do campo `access_token` retornado
+5. Clique no botão **"Authorize 🔓"** no topo da página do Swagger
+6. Cole o token no campo `Bearer` e confirme
+7. O endpoint protegido `GET /auth/users` já estará acessível
+
+---
+
+## 📁 Estrutura do Projeto
+
+```
+prov.nest/
+├── src/
+│   ├── dtos/
+│   │   ├── create-user.dto.ts    # Validação de campos do registro
+│   │   └── login.dto.ts          # Validação de campos do login
+│   ├── app.controller.ts         # Rotas HTTP + MessagePatterns TCP
+│   ├── app.module.ts             # Módulo raiz (JWT + ClientesTCP)
+│   ├── app.service.ts            # Regras de negócio (criar, autenticar, listar)
+│   ├── jwt-auth.guard.ts         # Guard para proteção de rotas com JWT
+│   ├── main.ts                   # Bootstrap do API Gateway (porta 3000)
+│   └── main-microservice.ts      # Bootstrap do Microsserviço TCP (porta 3001)
+├── test/
+│   └── app.e2e-spec.ts
+├── nest-cli.json
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## 📋 Outros Scripts Disponíveis
+
+```bash
+# Build para produção
+npm run build
+
+# Rodar em produção (após o build)
+npm run start:prod
+
+# Rodar testes unitários
+npm test
+
+# Rodar testes com cobertura
+npm run test:cov
+
+# Rodar testes E2E
+npm run test:e2e
+
+# Formatar código com Prettier
+npm run format
+
+# Lint e correção automática
+npm run lint
+```
+
+---
+
+## ⚙️ Variáveis de Configuração
+
+As seguintes configurações estão definidas diretamente no código. Para ambientes de produção, recomenda-se externalizá-las via variáveis de ambiente (`.env`):
+
+| Configuração | Valor Atual | Localização |
+|---|---|---|
+| `JWT_SECRET` | `PROVA_NEST_SECRET_KEY_2026` | `app.module.ts` |
+| `JWT_EXPIRATION` | `1h` | `app.module.ts` |
+| `GATEWAY_PORT` | `3000` | `main.ts` |
+| `MICROSERVICE_PORT` | `3001` | `main-microservice.ts` |
+| `CORS_ORIGIN` | `*` (qualquer origem) | `main.ts` |
